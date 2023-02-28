@@ -133,6 +133,7 @@ class FineTuning:
             num_train_epochs=num_train_epochs,
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
+            optim="adafactor"
             logging_steps=logging_steps
         )
 
