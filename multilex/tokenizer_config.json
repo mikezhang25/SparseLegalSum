@@ -1,0 +1,65 @@
+{
+  "additional_special_tokens": [],
+  "bos_token": {
+    "__type": "AddedToken",
+    "content": "<s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "cls_token": {
+    "__type": "AddedToken",
+    "content": "[CLS]",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "eos_token": {
+    "__type": "AddedToken",
+    "content": "</s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "mask_token": {
+    "__type": "AddedToken",
+    "content": "[MASK]",
+    "lstrip": true,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "mask_token_sent": null,
+  "model_max_length": 4096,
+  "name_or_path": "google/bigbird-pegasus-large-arxiv",
+  "offset": 0,
+  "pad_token": {
+    "__type": "AddedToken",
+    "content": "<pad>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "sep_token": {
+    "__type": "AddedToken",
+    "content": "[SEP]",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "special_tokens_map_file": "/home/patrick/.cache/huggingface/transformers/b548e984b09823ed5cea0e622c0ec194a7e07b3c5d2e6b48a7cde84bd179cc7c.4eda581f816a0a941629106f0338c957910ce4839ecf7e3e743bb79523bf7249",
+  "tokenizer_class": "PegasusTokenizer",
+  "unk_token": {
+    "__type": "AddedToken",
+    "content": "<unk>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  }
+}
