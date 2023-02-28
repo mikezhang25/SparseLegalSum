@@ -117,7 +117,7 @@ class FineTuning:
 
         print(len(tokenized_train))
 
-        batch_size = 100
+        batch_size = 8
         num_train_epochs = 8
         # Show the training loss with every epoch
         logging_steps = len(tokenized_train) // batch_size
@@ -133,7 +133,7 @@ class FineTuning:
             num_train_epochs=num_train_epochs,
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
-            optim="adafactor"
+            optim="adafactor",
             logging_steps=logging_steps
         )
 
