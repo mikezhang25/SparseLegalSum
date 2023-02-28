@@ -69,8 +69,10 @@ class FineTuning:
         self.MAX_TARGET_SIZE = 30
 
     def load_dataset(self):
-        self.train_set = load_dataset(
-            "ccdv/arxiv-summarization")
+        self.train = load_dataset(
+            "ccdv/arxiv-summarization", split="train[:1%]")
+        self.test = load_dataset(
+            "ccdv/arxiv-summarization", split="validation[:1%]")
 
     def preprocess_function(self, examples):
         model_inputs = self.tokenizer(
@@ -108,15 +110,17 @@ class FineTuning:
                   100 for key, value in result.items()}
         return {k: round(v, 4) for k, v in result.items()}
 
-    def train(self):
+    def train_model(self):
         # tokenize data
-        tokenized_train = self.train_set.map(
+        tokenized_train = self.train.map(
             self.preprocess_function, batched=True)
+        
+        print(len(tokenized_train))
 
-        batch_size = 8
+        batch_size = 100
         num_train_epochs = 8
         # Show the training loss with every epoch
-        logging_steps = len(tokenized_train["train"]) // batch_size
+        logging_steps = len(tokenized_train) // batch_size
         model_name = self.checkpoint.split("/")[-1]
         args = Seq2SeqTrainingArguments(
             output_dir=f"{model_name}-finetuned-amazon-en-es",
@@ -133,15 +137,18 @@ class FineTuning:
         )
 
         tokenized_train = tokenized_train.remove_columns(
-            self.train_set.column_names)
-        features = [tokenized_train["train"][i] for i in range(2)]
+            self.train.column_names)
+        features = [tokenized_train[i] for i in range(2)]
         self.data_collator(features)
+
+        tokenized_test = self.test.map(
+            self.preprocess_function, batched=True)
 
         trainer = Seq2SeqTrainer(
             self.model,
             args,
-            train_dataset=tokenized_train["train"],
-            eval_dataset=tokenized_train["validation"],
+            train_dataset=tokenized_train,
+            eval_dataset=tokenized_test,
             data_collator=self.data_collator,
             tokenizer=self.tokenizer,
             compute_metrics=self.compute_metrics,
@@ -154,4 +161,4 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
     finetune = FineTuning("arxiv_sum")
-    finetune.train()
+    finetune.train_model()
