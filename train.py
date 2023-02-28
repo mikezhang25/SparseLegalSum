@@ -51,6 +51,7 @@ class FineTuning:
         print(f"Setting up finetuning on {self.device}")
         self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
             "google/bigbird-pegasus-large-arxiv")
+        self.model.to(self.device)
         # self.tokenizer = AutoTokenizer.from_pretrained(
         #    "google/bigbird-pegasus-large-arxiv")
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -127,6 +128,7 @@ class FineTuning:
             save_total_limit=3,
             num_train_epochs=num_train_epochs,
             predict_with_generate=True,
+            fp16=(self.device == "cuda"),
             logging_steps=logging_steps
         )
 
