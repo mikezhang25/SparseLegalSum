@@ -1,6 +1,6 @@
 """ Trying to train a model, save parameters, then load into a model for other purpose """
 import torch
-from transformers import AutoTokenizer, BigBirdPegasusForQuestionAnswering, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, Seq2SeqTrainer
+from transformers import AutoTokenizer, BigBirdPegasusForQuestionAnswering, BigBirdPegasusForConditionalGeneration, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, Seq2SeqTrainer
 from tqdm import tqdm
 import numpy as np
 from nltk.tokenize import sent_tokenize
@@ -49,13 +49,13 @@ class FineTuning:
     def __init__(self, checkpoint) -> None:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(
-            "t5-small")
+        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
+            "google/bigbird-pegasus-large-arxiv")
         self.model.to(self.device)
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "t5-small")
         # self.tokenizer = AutoTokenizer.from_pretrained(
-        #    "multilex")
+        #    "t5-small")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            "multilex")
         self.load_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
