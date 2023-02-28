@@ -5,7 +5,9 @@ from transformers import AutoTokenizer
 
 def get_lexsum():
     # Download multi_lexsum locally and load it as a Dataset object 
-    return load_dataset("allenai/multi_lexsum", name="v20220616")
+    dataset = load_dataset("allenai/multi_lexsum", name="v20220616")
+    dataset = dataset.remove_columns(["summary/tiny", "summary/short"])
+    return dataset
 
 
 if __name__ == "__main__":

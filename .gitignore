@@ -1,0 +1,6 @@
+# remove the trainer_dir
+/trainer_dir
+/BigBirdPegasus.py
+/__pycache__
+/my_awesome_seq2seq_model
+/arxiv_sum-finetuned-amazon-en-es

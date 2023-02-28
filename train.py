@@ -5,48 +5,15 @@ from tqdm import tqdm
 import numpy as np
 from nltk.tokenize import sent_tokenize
 from datasets import load_dataset
+from data_util import get_lexsum
 import evaluate
-
-
-class Pretraining:
-    def __init__(self) -> None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Setting up Pretraining on {device}")
-        self.model = BigBirdPegasusForQuestionAnswering.from_pretrained(
-            "google/bigbird-pegasus-large-arxiv")
-        # self.tokenizer = AutoTokenizer.from_pretrained(
-        #    "google/bigbird-pegasus-large-arxiv")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "multilex")
-        self.load_dataset()
-        # hyperparameters
-        self.BATCH_SIZE = 10000
-        self.VOCAB_SIZE = 35000
-
-    def load_dataset(self) -> None:
-        self.train_dataset = load_dataset(
-            "allenai/multi_lexsum", name="v20220616", split="train")
-        # only train on the short (1 paragraph) summaries for now
-        self.train_dataset = self.train_dataset.remove_columns(
-            ["id", "summary/long", "summary/tiny"])
-        print(self.train_dataset.column_names)
-        # wiki = wiki.remove_columns([col for col in wiki.column_names if col != "text"])  # only keep the 'text' column
-
-    def batch_iterator(self):
-        """ generator function to dynamically load data by batch """
-        for i in tqdm(range(0, len(self.train_dataset))):
-            yield self.train_dataset[i]["sources"]
-
-    def train_tokenizer(self, save_path):
-        """ Train tokenizer to recognize terms in new dataset """
-        trained_tokenizer = self.tokenizer.train_new_from_iterator(
-            text_iterator=self.batch_iterator(),
-            vocab_size=self.VOCAB_SIZE)
-        trained_tokenizer.save_pretrained(save_path)
-
 
 class FineTuning:
     def __init__(self, checkpoint) -> None:
+
+        #TODO: Add more modularity to FineTuning Class & Make Legal Model Class
+
+
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
         self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
@@ -56,7 +23,7 @@ class FineTuning:
         #    "t5-small")
         self.tokenizer = AutoTokenizer.from_pretrained(
             "multilex")
-        self.load_dataset()
+        self.load_multilex_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
@@ -68,23 +35,18 @@ class FineTuning:
         self.MAX_LENGTH = 512
         self.MAX_TARGET_SIZE = 30
 
-    def load_dataset(self):
+    def load_arxiv_dataset(self):
         self.train = load_dataset(
             "ccdv/arxiv-summarization", split="train[:1%]")
         self.test = load_dataset(
             "ccdv/arxiv-summarization", split="validation[:1%]")
+        
+    def load_multilex_dataset(self):
+        self.train = load_dataset(
+            "allenai/multi_lexsum", name="v20220616", split="train[:1%]")
+        self.test = load_dataset(
+            "allenai/multi_lexsum", name="v20220616", split="validation[:1%]")
 
-    def preprocess_function(self, examples):
-        model_inputs = self.tokenizer(
-            examples["article"],
-            max_length=self.MAX_LENGTH,
-            truncation=True
-        )
-        labels = self.tokenizer(
-            examples["abstract"], max_length=self.MAX_TARGET_SIZE, truncation=True
-        )
-        model_inputs["labels"] = labels["input_ids"]
-        return model_inputs
 
     def compute_metrics(self, eval_pred):
         predictions, labels = eval_pred
@@ -106,19 +68,20 @@ class FineTuning:
             predictions=decoded_preds, references=decoded_labels, use_stemmer=True
         )
         # Extract the median scores
-        result = {key: value.mid.fmeasure *
+        result = {key: value *
                   100 for key, value in result.items()}
         return {k: round(v, 4) for k, v in result.items()}
 
     def train_model(self):
         # tokenize data
         tokenized_train = self.train.map(
-            self.preprocess_function, batched=True)
+            self.lexsum_preprocess_function,
+            )
 
         print(len(tokenized_train))
 
         batch_size = 8
-        num_train_epochs = 8
+        num_train_epochs = 2
         # Show the training loss with every epoch
         logging_steps = len(tokenized_train) // batch_size
         model_name = self.checkpoint.split("/")[-1]
@@ -134,17 +97,21 @@ class FineTuning:
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
             optim="adafactor",
-            compute_objective=lambda x: x,
+                        # compute_objective=lambda x: x,
             logging_steps=logging_steps
         )
 
         tokenized_train = tokenized_train.remove_columns(
             self.train.column_names)
+
+        # tokenized_train = tokenized_train.remove_columns(["summary/tiny", "summary/short"])
+
         features = [tokenized_train[i] for i in range(2)]
+
         self.data_collator(features)
 
         tokenized_test = self.test.map(
-            self.preprocess_function, batched=True)
+            self.lexsum_preprocess_function)
 
         trainer = Seq2SeqTrainer(
             self.model,
@@ -158,9 +125,35 @@ class FineTuning:
 
         trainer.train()
 
+    def preprocess_function(self, examples):
+        model_inputs = self.tokenizer(
+            examples["article"],
+            max_length=self.MAX_LENGTH,
+            truncation=True
+        )
+        labels = self.tokenizer(
+            examples["abstract"], max_length=self.MAX_TARGET_SIZE, truncation=True
+        )
+        model_inputs["labels"] = labels["input_ids"]
+        return model_inputs
+
+    def lexsum_preprocess_function(self, examples): 
+        sources = examples["sources"]
+        concat_sources = ""
+        for s in sources: 
+            concat_sources += str(s)
+
+        model_inputs = self.tokenizer(str(examples["sources"]), max_length=self.MAX_TARGET_SIZE, truncation=True)
+        labels = self.tokenizer(text_target=examples["summary/long"], max_length=self.MAX_TARGET_SIZE, truncation=True)
+        model_inputs["labels"] = labels["input_ids"]
+
+        return model_inputs
+
 
 if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
+    
     finetune = FineTuning("arxiv_sum")
     finetune.train_model()
+
