@@ -134,6 +134,7 @@ class FineTuning:
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
             optim="adafactor",
+            compute_objective=lambda x: x,
             logging_steps=logging_steps
         )
 
