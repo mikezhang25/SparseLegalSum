@@ -4,3 +4,6 @@
 /__pycache__
 /my_awesome_seq2seq_model
 /arxiv_sum-finetuned-amazon-en-es
+/CleanUp.py
+/billsum-finetuned
+/legalmodel-finetuned

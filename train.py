@@ -5,15 +5,11 @@ from tqdm import tqdm
 import numpy as np
 from nltk.tokenize import sent_tokenize
 from datasets import load_dataset
-from data_util import get_lexsum
 import evaluate
 
-class FineTuning:
+class LegalModel:
     def __init__(self, checkpoint) -> None:
-
-        #TODO: Add more modularity to FineTuning Class & Make Legal Model Class
-
-
+        #TODO: Add more modularity to FineTuning Class & Make Legal Model Class 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
         self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
@@ -21,9 +17,11 @@ class FineTuning:
         self.model.to(self.device)
         # self.tokenizer = AutoTokenizer.from_pretrained(
         #    "t5-small")
+        # self.tokenizer = AutoTokenizer.from_pretrained()
+
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "multilex")
-        self.load_multilex_dataset()
+            "google/bigbird-pegasus-large-arxiv")
+        self.load_billsum_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
@@ -33,19 +31,26 @@ class FineTuning:
         self.EPOCHS = 8
         self.VOCAB_SIZE = 35000
         self.MAX_LENGTH = 512
-        self.MAX_TARGET_SIZE = 30
+        self.MAX_TARGET_SIZE = 512
+
 
     def load_arxiv_dataset(self):
         self.train = load_dataset(
-            "ccdv/arxiv-summarization", split="train[:1%]")
+            "ccdv/arxiv-summarization", split="train[:5%]")
         self.test = load_dataset(
-            "ccdv/arxiv-summarization", split="validation[:1%]")
+            "ccdv/arxiv-summarization", split="validation[:5%]")
         
     def load_multilex_dataset(self):
         self.train = load_dataset(
             "allenai/multi_lexsum", name="v20220616", split="train[:1%]")
         self.test = load_dataset(
             "allenai/multi_lexsum", name="v20220616", split="validation[:1%]")
+    
+    def load_billsum_dataset(self): 
+        self.train = load_dataset(
+            "billsum", split="train[:36]")
+        self.test = load_dataset(
+            "billsum", split="test[:36]")
 
 
     def compute_metrics(self, eval_pred):
@@ -75,18 +80,18 @@ class FineTuning:
     def train_model(self):
         # tokenize data
         tokenized_train = self.train.map(
-            self.lexsum_preprocess_function,
-            )
+            self.billsum_preprocess_function
+        )
 
         print(len(tokenized_train))
 
         batch_size = 8
-        num_train_epochs = 2
+        num_train_epochs = 3
         # Show the training loss with every epoch
         logging_steps = len(tokenized_train) // batch_size
-        model_name = self.checkpoint.split("/")[-1]
+        # model_name = self.checkpoint.split("/")[-1]
         args = Seq2SeqTrainingArguments(
-            output_dir=f"{model_name}-finetuned-amazon-en-es",
+            output_dir="billsum-finetuned",
             evaluation_strategy="epoch",
             learning_rate=5.6e-5,
             per_device_train_batch_size=batch_size,
@@ -97,21 +102,21 @@ class FineTuning:
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
             optim="adafactor",
-                        # compute_objective=lambda x: x,
+            # compute_objective=lambda x: x,
             logging_steps=logging_steps
         )
 
         tokenized_train = tokenized_train.remove_columns(
             self.train.column_names)
 
-        # tokenized_train = tokenized_train.remove_columns(["summary/tiny", "summary/short"])
-
         features = [tokenized_train[i] for i in range(2)]
+
+        # print("Here are the features: ",  features)
 
         self.data_collator(features)
 
         tokenized_test = self.test.map(
-            self.lexsum_preprocess_function)
+            self.billsum_preprocess_function)
 
         trainer = Seq2SeqTrainer(
             self.model,
@@ -142,11 +147,19 @@ class FineTuning:
         concat_sources = ""
         for s in sources: 
             concat_sources += str(s)
+        n = 4096
+        chunks = [str[i:i+n] for i in range(0, len(str), n)]
 
-        model_inputs = self.tokenizer(str(examples["sources"]), max_length=self.MAX_TARGET_SIZE, truncation=True)
+        model_inputs = self.tokenizer(str(examples["sources"]), max_length=self.MAX_LENGTH, truncation=True)
         labels = self.tokenizer(text_target=examples["summary/long"], max_length=self.MAX_TARGET_SIZE, truncation=True)
         model_inputs["labels"] = labels["input_ids"]
 
+        return model_inputs
+
+    def billsum_preprocess_function(self, examples): 
+        model_inputs = self.tokenizer(examples["text"], max_length=self.MAX_LENGTH, truncation=True)
+        labels = self.tokenizer(text_target=examples["summary"], max_length=self.MAX_TARGET_SIZE, truncation=True)
+        model_inputs["labels"] = labels["input_ids"]
         return model_inputs
 
 
@@ -154,6 +167,5 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
     
-    finetune = FineTuning("arxiv_sum")
-    finetune.train_model()
-
+    legalModel = LegalModel("arxiv_sum")
+    legalModel.train_model()
