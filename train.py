@@ -15,8 +15,8 @@ class LegalModel:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
-        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
-            "google/bigbird-pegasus-large-arxiv")
+        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained("billsum-finetuned/checkpoint-9000")
+        #    "google/bigbird-pegasus-large-arxiv")
         self.model.to(self.device)
         # self.tokenizer = AutoTokenizer.from_pretrained(
         #    "t5-small")
@@ -171,9 +171,10 @@ class LegalModel:
         # self.test = self.test.rename_column("article", "input_column")
         # self.test = self.test.rename_column("abstract", "label_column")
         # print(self.test.column_names)
+        data = self.test.shuffle().select(range(100))
         task_evaluator = evaluator("summarization")
         results = task_evaluator.compute(
-            model_or_pipeline=self.model, tokenizer=self.tokenizer, data=self.test, input_column="text", label_column="summary")
+            model_or_pipeline=self.model, tokenizer=self.tokenizer, data=data, input_column="text", label_column="summary")
         return results
 
 
@@ -181,5 +182,5 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
     legalModel = LegalModel("arxiv_sum")
-    legalModel.train_model()
-    # legalModel.evaluate_model()
+    #legalModel.train_model()
+    print(legalModel.evaluate_model())
