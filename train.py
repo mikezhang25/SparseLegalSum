@@ -181,5 +181,5 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
     legalModel = LegalModel("arxiv_sum")
-    # legalModel.train_model()
-    legalModel.evaluate_model()
+    legalModel.train_model()
+    # legalModel.evaluate_model()
