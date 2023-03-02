@@ -11,12 +11,12 @@ import argparse
 
 
 class LegalModel:
-    def __init__(self, checkpoint) -> None:
+    def __init__(self, checkpoint="google/bigbird-pegasus-large-arxiv") -> None:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
-        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained("billsum-finetuned/checkpoint-9000")
-        #    "google/bigbird-pegasus-large-arxiv")
+        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
+            checkpoint)
         self.model.to(self.device)
         # self.tokenizer = AutoTokenizer.from_pretrained(
         #    "t5-small")
@@ -84,7 +84,7 @@ class LegalModel:
             self.billsum_preprocess_function
         )
 
-        batch_size = 4 # breaks when we hit 8
+        batch_size = 4  # breaks when we hit 8
         num_train_epochs = 3
         # Show the training loss with every epoch
         logging_steps = len(tokenized_train) // batch_size
@@ -176,11 +176,25 @@ class LegalModel:
         results = task_evaluator.compute(
             model_or_pipeline=self.model, tokenizer=self.tokenizer, data=data, input_column="text", label_column="summary")
         return results
-
+    
+    def sample_summary(self):
+        """ Print out the summary of a random sample """
+        text = legalModel.test["text"][0]
+        input_tokenized = self.tokenizer.encode(text, truncation=True, return_tensors='pt')
+        input_tokenized = input_tokenized.to(self.device)
+        summary_ids = self.model.to(self.device).generate(input_tokenized,
+                                        length_penalty=3.0,
+                                        min_length=30,
+                                        max_length=100)
+        output = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        return output
 
 if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
-    legalModel = LegalModel("arxiv_sum")
-    #legalModel.train_model()
-    print(legalModel.evaluate_model())
+
+    legalModel = LegalModel()
+    # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
+    # legalModel.train_model()
+    #print(legalModel.evaluate_model())
+    print(legalModel.sample_summary())
