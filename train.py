@@ -7,7 +7,6 @@ from nltk.tokenize import sent_tokenize
 from datasets import load_dataset
 import evaluate
 from evaluate import evaluator
-import argparse
 
 
 class LegalModel:
@@ -50,9 +49,9 @@ class LegalModel:
 
     def load_billsum_dataset(self):
         self.train = load_dataset(
-            "billsum", split="train")
+            "billsum", split="train[:1%]")
         self.test = load_dataset(
-            "billsum", split="test")
+            "billsum", split="test[:1%]")
 
     def compute_metrics(self, eval_pred):
         predictions, labels = eval_pred
@@ -81,7 +80,8 @@ class LegalModel:
     def train_model(self):
         # tokenize data
         tokenized_train = self.train.map(
-            self.billsum_preprocess_function
+            self.billsum_preprocess_function,
+            batched=True,  # for multithreading acceleration
         )
 
         batch_size = 4  # breaks when we hit 8
@@ -126,7 +126,7 @@ class LegalModel:
             tokenizer=self.tokenizer,
             compute_metrics=self.compute_metrics,
         )
-
+        print("Training")
         trainer.train()
 
     def preprocess_function(self, examples):
@@ -166,35 +166,34 @@ class LegalModel:
         return model_inputs
 
     def evaluate_model(self):
-        # data = load_dataset("imdb", split="test").shuffle(seed=42).select(range(1000))
-        print(self.test.column_names)
-        # self.test = self.test.rename_column("article", "input_column")
-        # self.test = self.test.rename_column("abstract", "label_column")
-        # print(self.test.column_names)
+        """ Returns ROUGE scores for current model """
         data = self.test.shuffle().select(range(100))
         task_evaluator = evaluator("summarization")
         results = task_evaluator.compute(
             model_or_pipeline=self.model, tokenizer=self.tokenizer, data=data, input_column="text", label_column="summary")
         return results
-    
+
     def sample_summary(self):
         """ Print out the summary of a random sample """
         text = legalModel.test["text"][0]
-        input_tokenized = self.tokenizer.encode(text, truncation=True, return_tensors='pt')
+        input_tokenized = self.tokenizer.encode(
+            text, truncation=True, return_tensors='pt')
         input_tokenized = input_tokenized.to(self.device)
         summary_ids = self.model.to(self.device).generate(input_tokenized,
-                                        length_penalty=3.0,
-                                        min_length=30,
-                                        max_length=100)
-        output = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+                                                          length_penalty=3.0,
+                                                          min_length=30,
+                                                          max_length=100)
+        output = self.tokenizer.decode(
+            summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         return output
+
 
 if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
 
-    legalModel = LegalModel()
+    legalModel = LegalModel(checkpoint="google/bigbird-roberta-base")
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
-    # legalModel.train_model()
-    #print(legalModel.evaluate_model())
-    print(legalModel.sample_summary())
+    legalModel.train_model()
+    # print(legalModel.evaluate_model())
+    # print(legalModel.sample_summary())
