@@ -21,10 +21,10 @@ class LegalModel:
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             checkpoint)
         self.model.to(self.device)
-        # self.tokenizer = AutoTokenizer.from_pretrained(
-        #    "google/bigbird-pegasus-large-arxiv")
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "nsi319/legal-pegasus")
+            "google/bigbird-pegasus-large-arxiv")
+        # self.tokenizer = AutoTokenizer.from_pretrained(
+        #    "nsi319/legal-pegasus")
         self.load_billsum_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
@@ -79,7 +79,10 @@ class LegalModel:
                   100 for key, value in result.items()}
         return {k: round(v, 4) for k, v in result.items()}
 
-    def train_model(self):
+    def train_model(self, output_dir):
+        # freeze layers before training
+        for param in self.model.base_model.parameters():
+            param.requires_grad = False
         # tokenize data
         tokenized_train = self.train.map(
             self.billsum_preprocess_function,
@@ -92,7 +95,7 @@ class LegalModel:
         logging_steps = len(tokenized_train) // batch_size
         # model_name = self.checkpoint.split("/")[-1]
         args = Seq2SeqTrainingArguments(
-            output_dir="billsum-finetuned",
+            output_dir=output_dir,
             evaluation_strategy="epoch",
             report_to="wandb",
             learning_rate=5.6e-5,
@@ -205,9 +208,9 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
 
-    legalModel = LegalModel(checkpoint="nsi319/legal-pegasus")
+    legalModel = LegalModel()
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
-    # legalModel.train_model()
-    print(legalModel.evaluate_model())
+    legalModel.train_model("billsum-finetuned-freezed")
+    # print(legalModel.evaluate_model())
     # print(legalModel.sample_summary())
-    wandb.finish()
+    # wandb.finish()

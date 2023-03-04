@@ -1,0 +1,62 @@
+2023-03-03 21:17:36,549 INFO    StreamThr :81776 [internal.py:wandb_internal():90] W&B internal server running at pid: 81776, started at: 2023-03-03 21:17:36.548548
+2023-03-03 21:17:36,550 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status
+2023-03-03 21:17:36,552 INFO    WriterThread:81776 [datastore.py:open_for_write():85] open: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/run-fnh9t2aq.wandb
+2023-03-03 21:17:36,553 DEBUG   SenderThread:81776 [sender.py:send():336] send: header
+2023-03-03 21:17:36,574 DEBUG   SenderThread:81776 [sender.py:send():336] send: run
+2023-03-03 21:17:37,025 INFO    SenderThread:81776 [dir_watcher.py:__init__():216] watching files in: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files
+2023-03-03 21:17:37,025 INFO    SenderThread:81776 [sender.py:_start_run_threads():1070] run started: fnh9t2aq with start time 1677907056.547429
+2023-03-03 21:17:37,025 DEBUG   SenderThread:81776 [sender.py:send_request():363] send_request: summary_record
+2023-03-03 21:17:37,026 INFO    SenderThread:81776 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-03-03 21:17:37,031 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: check_version
+2023-03-03 21:17:37,031 DEBUG   SenderThread:81776 [sender.py:send_request():363] send_request: check_version
+2023-03-03 21:17:37,120 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: run_start
+2023-03-03 21:17:37,122 DEBUG   HandlerThread:81776 [system_info.py:__init__():31] System info init
+2023-03-03 21:17:37,122 DEBUG   HandlerThread:81776 [system_info.py:__init__():46] System info init done
+2023-03-03 21:17:37,122 INFO    HandlerThread:81776 [system_monitor.py:start():151] Starting system monitor
+2023-03-03 21:17:37,122 INFO    SystemMonitor:81776 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-03-03 21:17:37,122 INFO    HandlerThread:81776 [system_monitor.py:probe():172] Collecting system info
+2023-03-03 21:17:37,123 INFO    SystemMonitor:81776 [interfaces.py:start():168] Started cpu
+2023-03-03 21:17:37,123 INFO    SystemMonitor:81776 [interfaces.py:start():168] Started disk
+2023-03-03 21:17:37,123 DEBUG   HandlerThread:81776 [system_info.py:probe():195] Probing system
+2023-03-03 21:17:37,123 INFO    SystemMonitor:81776 [interfaces.py:start():168] Started memory
+2023-03-03 21:17:37,124 INFO    SystemMonitor:81776 [interfaces.py:start():168] Started network
+2023-03-03 21:17:37,134 DEBUG   HandlerThread:81776 [system_info.py:_probe_git():180] Probing git
+2023-03-03 21:17:37,157 DEBUG   HandlerThread:81776 [system_info.py:_probe_git():188] Probing git done
+2023-03-03 21:17:37,157 DEBUG   HandlerThread:81776 [system_info.py:probe():241] Probing system done
+2023-03-03 21:17:37,157 DEBUG   HandlerThread:81776 [system_monitor.py:probe():181] {'os': 'Darwin-22.2.0-x86_64-i386-64bit', 'python': '3.7.9', 'heartbeatAt': '2023-03-04T05:17:37.123927', 'startedAt': '2023-03-04T05:17:36.536181', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'train.py', 'codePath': 'train.py', 'git': {'remote': 'https://github.com/mikezhang25/SparseLegalSum.git', 'commit': 'a08f65b2f5c15f5e17d409fcfacebf8158b393d9'}, 'email': '48890588+mikezhang25@users.noreply.github.com', 'root': '/Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum', 'host': 'Pronium', 'username': 'mzhang', 'executable': '/Library/Frameworks/Python.framework/Versions/3.7/bin/python3', 'cpu_count': 10, 'cpu_count_logical': 10, 'cpu_freq': {'current': 2400, 'min': 2400, 'max': 2400}, 'cpu_freq_per_core': [{'current': 2400, 'min': 2400, 'max': 2400}], 'disk': {'total': 926.3517189025879, 'used': 10.967113494873047}, 'memory': {'total': 32.0}}
+2023-03-03 21:17:37,157 INFO    HandlerThread:81776 [system_monitor.py:probe():182] Finished collecting system info
+2023-03-03 21:17:37,157 INFO    HandlerThread:81776 [system_monitor.py:probe():185] Publishing system info
+2023-03-03 21:17:37,157 DEBUG   HandlerThread:81776 [system_info.py:_save_pip():52] Saving list of pip packages installed into the current environment
+2023-03-03 21:17:37,158 DEBUG   HandlerThread:81776 [system_info.py:_save_pip():67] Saving pip packages done
+2023-03-03 21:17:37,158 INFO    HandlerThread:81776 [system_monitor.py:probe():187] Finished publishing system info
+2023-03-03 21:17:37,169 DEBUG   SenderThread:81776 [sender.py:send():336] send: files
+2023-03-03 21:17:37,169 INFO    SenderThread:81776 [sender.py:_save_file():1321] saving file wandb-metadata.json with policy now
+2023-03-03 21:17:37,175 DEBUG   SenderThread:81776 [sender.py:send():336] send: telemetry
+2023-03-03 21:17:37,180 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: stop_status
+2023-03-03 21:17:37,180 DEBUG   SenderThread:81776 [sender.py:send():336] send: config
+2023-03-03 21:17:37,181 DEBUG   SenderThread:81776 [sender.py:send():336] send: metric
+2023-03-03 21:17:37,182 DEBUG   SenderThread:81776 [sender.py:send():336] send: telemetry
+2023-03-03 21:17:37,182 DEBUG   SenderThread:81776 [sender.py:send_request():363] send_request: stop_status
+2023-03-03 21:17:37,270 DEBUG   SenderThread:81776 [sender.py:send():336] send: metric
+2023-03-03 21:17:37,270 WARNING SenderThread:81776 [sender.py:send_metric():1272] Seen metric with glob (shouldn't happen)
+2023-03-03 21:17:37,558 INFO    wandb-upload_0:81776 [upload_job.py:push():138] Uploaded file /var/folders/84/ggj0vwjj19b_rl_fksvpyb200000gq/T/tmp3fqldqw4wandb/jgj5ipib-wandb-metadata.json
+2023-03-03 21:17:38,032 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/wandb-summary.json
+2023-03-03 21:17:38,032 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/requirements.txt
+2023-03-03 21:17:38,032 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/wandb-metadata.json
+2023-03-03 21:17:38,032 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/output.log
+2023-03-03 21:17:40,041 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/output.log
+2023-03-03 21:17:42,288 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:17:47,305 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:17:52,179 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:17:52,179 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:17:52,327 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:17:57,197 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:17:57,346 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:18:02,222 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:18:02,369 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:18:07,243 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:18:07,397 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:18:08,181 INFO    Thread-13 :81776 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum/wandb/run-20230303_211736-fnh9t2aq/files/config.yaml
+2023-03-03 21:18:12,268 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
+2023-03-03 21:18:12,560 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: status_report
+2023-03-03 21:18:17,292 DEBUG   HandlerThread:81776 [handler.py:handle_request():144] handle_request: keepalive
