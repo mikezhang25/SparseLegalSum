@@ -1,0 +1,32 @@
+  0%|                                                                                                                                                                 | 0/144 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "train.py", line 210, in <module>
+    legalModel.train_model()
+  File "train.py", line 133, in train_model
+    trainer.train()
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/trainer.py", line 1547, in train
+    ignore_keys_for_eval=ignore_keys_for_eval,
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/trainer.py", line 1791, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/trainer.py", line 2539, in training_step
+    loss = self.compute_loss(model, inputs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/trainer.py", line 2571, in compute_loss
+    outputs = model(**inputs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py", line 2576, in forward
+    return_dict=return_dict,
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py", line 2430, in forward
+    return_dict=return_dict,
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py", line 1861, in forward
+    inputs_embeds = self.embed_tokens(input_ids) * self.embed_scale
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/modules/sparse.py", line 162, in forward
+    self.norm_type, self.scale_grad_by_freq, self.sparse)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/torch/nn/functional.py", line 2210, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+IndexError: index out of range in self

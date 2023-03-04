@@ -1,0 +1,42 @@
+{
+    "os": "Darwin-22.2.0-x86_64-i386-64bit",
+    "python": "3.7.9",
+    "heartbeatAt": "2023-03-04T00:24:43.741727",
+    "startedAt": "2023-03-04T00:24:43.369561",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/mikezhang25/SparseLegalSum.git",
+        "commit": "7bac10ec020c09a6fced805871d7cef79dcd18a9"
+    },
+    "email": "48890588+mikezhang25@users.noreply.github.com",
+    "root": "/Users/mzhang/GitHub/StanfordCS/CS224N/SparseLegalSum",
+    "host": "Pronium",
+    "username": "mzhang",
+    "executable": "/Library/Frameworks/Python.framework/Versions/3.7/bin/python3",
+    "cpu_count": 10,
+    "cpu_count_logical": 10,
+    "cpu_freq": {
+        "current": 2400,
+        "min": 2400,
+        "max": 2400
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2400,
+            "min": 2400,
+            "max": 2400
+        }
+    ],
+    "disk": {
+        "total": 926.3517189025879,
+        "used": 10.967113494873047
+    },
+    "memory": {
+        "total": 32.0
+    }
+}

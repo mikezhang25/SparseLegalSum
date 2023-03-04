@@ -1,6 +1,8 @@
 """ Trying to train a model, save parameters, then load into a model for other purpose """
+import os
 import torch
-from transformers import AutoTokenizer, BigBirdPegasusForQuestionAnswering, BigBirdPegasusForConditionalGeneration, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, Seq2SeqTrainer
+import wandb
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, BigBirdPegasusForConditionalGeneration, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, Seq2SeqTrainer
 from tqdm import tqdm
 import numpy as np
 from nltk.tokenize import sent_tokenize
@@ -14,15 +16,15 @@ class LegalModel:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
-        self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
+        # self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
+        #    checkpoint)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
             checkpoint)
         self.model.to(self.device)
         # self.tokenizer = AutoTokenizer.from_pretrained(
-        #    "t5-small")
-        # self.tokenizer = AutoTokenizer.from_pretrained()
-
+        #    "google/bigbird-pegasus-large-arxiv")
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "google/bigbird-pegasus-large-arxiv")
+            "nsi319/legal-pegasus")
         self.load_billsum_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
@@ -92,6 +94,7 @@ class LegalModel:
         args = Seq2SeqTrainingArguments(
             output_dir="billsum-finetuned",
             evaluation_strategy="epoch",
+            report_to="wandb",
             learning_rate=5.6e-5,
             per_device_train_batch_size=batch_size,
             per_device_eval_batch_size=batch_size,
@@ -189,11 +192,22 @@ class LegalModel:
 
 
 if __name__ == "__main__":
+    RUN_NAME = "chunking_finetune"
+    # set up logging
+    # set the wandb project where this run will be logged
+    os.environ["WANDB_PROJECT"] = RUN_NAME
+
+    # save your trained model checkpoint to wandb
+    os.environ["WANDB_LOG_MODEL"] = "true"
+
+    # turn off watch to log faster
+    os.environ["WANDB_WATCH"] = "false"
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
 
-    legalModel = LegalModel(checkpoint="google/bigbird-roberta-base")
+    legalModel = LegalModel("nsi319/legal-pegasus")
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
-    legalModel.train_model()
-    # print(legalModel.evaluate_model())
+    # legalModel.train_model()
+    print(legalModel.evaluate_model())
     # print(legalModel.sample_summary())
+    wandb.finish()
