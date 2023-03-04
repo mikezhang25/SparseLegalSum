@@ -51,9 +51,9 @@ class LegalModel:
 
     def load_billsum_dataset(self):
         self.train = load_dataset(
-            "billsum", split="train[:1%]")
+            "billsum", split="train")
         self.test = load_dataset(
-            "billsum", split="test[:1%]")
+            "billsum", split="test")
 
     def compute_metrics(self, eval_pred):
         predictions, labels = eval_pred
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     #pretrain = Pretraining()
     #tokens = pretrain.tokenizer("Sample text is true")
 
-    legalModel = LegalModel("nsi319/legal-pegasus")
+    legalModel = LegalModel(checkpoint="nsi319/legal-pegasus")
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
     # legalModel.train_model()
     print(legalModel.evaluate_model())
