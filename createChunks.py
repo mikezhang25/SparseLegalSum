@@ -10,7 +10,7 @@ def load_billsum_dataset():
     return load_dataset("billsum")
 
 
-def discreteChunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_title=False): 
+def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_title=False, k_sentences=None, appendTitle=False): 
     dataset = load_billsum_dataset()
     i = 0
     tokenizer = AutoTokenizer.from_pretrained(
@@ -23,12 +23,13 @@ def discreteChunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, incl
         if num_of_chunks != None: 
             size_of_chunks = math.ceil(len(doc["text"])/num_of_chunks) # applies to this specific document
         sent_text = nltk.sent_tokenize(doc["text"])
-        runningLen = 0
-        curChunk = ""
+        runningLen = 0 if appendTitle == False else len(doc["title"])
+        curChunk = "" if appendTitle == False else doc["title"] + " "
+        sent_arr = []
         for sentence in sent_text: 
             sentLen = len(sentence)
 
-            if size_of_chunks != None: 
+            if num_of_chunks != None: 
                 condition = True if runningLen > size_of_chunks else False
             else: 
                 condition = True if runningLen + sentLen > size_of_chunks else False
@@ -38,10 +39,22 @@ def discreteChunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, incl
                 mapping = {"text": curChunk, "summary": doc["summary"]}
                 dataEntries.append(mapping)
                 runningLen = 0
-                curChunk = ""  
+                curChunk = ""
 
+                # take the last k sentences from this chunk and append to next chunk
+                if k_sentences is not None: 
+                    assert k_sentences >= 1
+                    last_k_sentences = sent_arr[-k_sentences:] 
+                    for s in last_k_sentences: 
+                        runningLen += len(s)
+                        curChunk += s
+                    sent_arr = []
+            
+            # add sentence 
             runningLen += sentLen
             curChunk += sentence
+            sent_arr.append(sentence)
+            
         # concatenate any non-full chunks that remain
         if runningLen > 0: 
             mapping = {"text": curChunk, "summary": doc["summary"]}
@@ -55,7 +68,7 @@ def discreteChunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, incl
 def JSONToDataset(filename): 
     return load_dataset("json", data_files=filename, split="train")
 
-def createDiscreteChunks(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False): 
+def createChunks(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False, k_sentences=None, appendTitle=False): 
     """
     Creates discrete chunks of a given dataset (non-overlapping)
 
@@ -63,41 +76,67 @@ def createDiscreteChunks(filename, size_of_chunks=4096, num_of_chunks=None, recr
         size_of_chunks (int, optional): Defaults to 4096.
         num_of_chunks (_type_, optional):  Defaults to None.
         recreate (bool, optional): Defaults to False.
-
+        appendTitle (bool, optional): Appends title to the front of the first chunk. 
+        k_sentences (int, optional): Number of sentences to keep from previous chunk in next chunk. 
     Returns:
        Dataset: returns a Dataset object from transformers library
     """
     path = Path("./" + filename)
     if not path.is_file() or recreate: 
     # creates the JSON file with the given filename
-        discreteChunksToJSON(filename, 
+        chunksToJSON(filename, 
                             size_of_chunks=size_of_chunks, 
-                            num_of_chunks=num_of_chunks
+                            num_of_chunks=num_of_chunks, 
+                            k_sentences=k_sentences, 
+                            appendTitle=appendTitle
                             ) 
-        print("Should Print")
+        
     # json file exists at this point
     newDataset = JSONToDataset(filename)
     return newDataset
 
-def createOverlappingChunks(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False):
-    pass
-    # TODO: Implement overlapping with K tokens - may have to be K sentences. 
 
-# example of how to use: 
+
+'''
+There are a few key ways of using the function 
+1. Don't pass in anything except the filename
+    * This will automatically create chunks of 4096 length
+    * Alternatively set the size_of_chunks to your target chunk size
+
+2. Pass in num_of_chunks equal to desired chunk count
+
+3. Pass in k_sentences equal to number of overlapping sentences between chunks
+
+4. You can set appendTitle=True so that the title is included in the first chunk
+NOTE: LMK if you think appending the title to each chunk is a good idea. 
+
+Please use recreate=True whenever you modify one of the input variables to the
+function. This ensures that the dataset is actually recreated with the modifications. 
+
+Things to avoid: 
+
+1. Don't set k_sentences and num_of_chunks at the same time. 
+This will lead to untested behavior. 
+2. Don't set num_of_chunks and size_of_chunks at the same time. 
+This will lead to untested behavior. 
+
+'''
 
 filename = "chunkedDataset.json" # intermediate JSON file
 size_of_chunks = 4096
 num_of_chunks = 3
+k_sentences = 3
+include_title = True
+
 
 # actual dataset
-dataset = createDiscreteChunks(filename, num_of_chunks=3, recreate=True)
+dataset = createChunks(filename, 
+                        recreate=True,
+                        k_sentences=k_sentences, 
+                        appendTitle=include_title
+                        )
 
-'''
-Please use recreate=True when changing any of the parameters. This ensures that that the new dataset is actually
-created. 
-Alternatively just create a new intermediate filename and that will create a new dataset with the specified params.
-'''
 
-# let's see an entry with 3 chunks
+# for testing: allows me to see a few entries at a time
 with open ("test.json", 'w') as f: 
-    json.dump(dataset[0:3], f, indent=4)
+    json.dump(dataset[0:5], f, indent=4)
