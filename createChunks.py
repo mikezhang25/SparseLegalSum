@@ -11,11 +11,7 @@ def load_billsum_dataset():
 
 
 def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_title=False, k_sentences=None, appendTitle=False): 
-    dataset = load_billsum_dataset()
-    i = 0
-    tokenizer = AutoTokenizer.from_pretrained(
-            "google/bigbird-pegasus-large-arxiv")
-    
+    dataset = load_billsum_dataset()    
     dataEntries = []  # where every dictionary entry will be stored
     # default
 
@@ -52,7 +48,7 @@ def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_titl
             
             # add sentence 
             runningLen += sentLen
-            curChunk += sentence
+            curChunk = curChunk + " " + sentence
             sent_arr.append(sentence)
             
         # concatenate any non-full chunks that remain
@@ -68,7 +64,7 @@ def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_titl
 def JSONToDataset(filename): 
     return load_dataset("json", data_files=filename, split="train")
 
-def createChunks(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False, k_sentences=None, appendTitle=False): 
+def createChunksfromDataset(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False, k_sentences=None, appendTitle=False): 
     """
     Creates discrete chunks of a given dataset (non-overlapping)
 
@@ -96,6 +92,58 @@ def createChunks(filename, size_of_chunks=4096, num_of_chunks=None, recreate=Fal
     return newDataset
 
 
+def createChunksFromDoc(doc, num_of_chunks, k_sentences=None): 
+    """
+    Breaks down an input string document into
+    the number of chunks specified. 
+
+    Args:
+        doc (string): text document
+        num_of_chunks (int):  number of chunks desired
+        k_sentences (int, optional): Number of overlapping chunks desired. Defaults to None.
+
+    Returns:
+        chunks: list of strings
+    """
+    chunks = []
+    size_of_chunks = math.ceil(len(doc)/num_of_chunks) # applies to this specific document
+    sent_text = nltk.sent_tokenize(doc)
+    runningLen = 0
+    curChunk = ""
+    sent_arr = []
+    for sentence in sent_text: 
+        sentLen = len(sentence)
+
+        condition = True if runningLen > size_of_chunks else False
+
+        if condition: 
+            # already reached the maximum size for this chunk
+            # mapping = {"text": curChunk, "summary": doc["summary"]}
+            # dataEntries.append(mapping)
+            chunks.append(curChunk)
+            runningLen = 0
+            curChunk = ""
+
+            # take the last k sentences from this chunk and append to next chunk
+            if k_sentences is not None: 
+                assert k_sentences >= 1
+                last_k_sentences = sent_arr[-k_sentences:] 
+                for s in last_k_sentences: 
+                    runningLen += len(s)
+                    curChunk = " " + s
+                sent_arr = []
+        
+        # add sentence 
+        runningLen += sentLen
+        curChunk = curChunk + " " + sentence
+        sent_arr.append(sentence)
+        
+    # concatenate any non-full chunks that remain
+    if runningLen > 0: 
+        chunks.append(curChunk)
+
+    return chunks
+     
 
 '''
 There are a few key ways of using the function 
@@ -130,13 +178,26 @@ include_title = True
 
 
 # actual dataset
-dataset = createChunks(filename, 
+dataset = createChunksfromDataset(filename, 
                         recreate=True,
                         k_sentences=k_sentences, 
                         appendTitle=include_title
                         )
 
 
+'''
+The following implementation is for one document. It returns a list of strings. 
+The size of the list is <= num_of_chunks. 
+'''
+
 # for testing: allows me to see a few entries at a time
 with open ("test.json", 'w') as f: 
     json.dump(dataset[0:5], f, indent=4)
+
+
+doc = "An alternative to solving for the optimal value function over the belief space is to use posterior sampling,8 which was originally introduced in the context of exploration in bandit problems in section 15.4.9 Here, we draw a sample θ from the current belief b and then solve for the best action, assuming that θ is the true model. We then update our belief, draw a new sample, and solve the corresponding MDP. Example 16.4 provides an example instance of this. An advantage of posterior sampling is that we do not have to decide on heuristic exploration parameters. However, solving the MDP at every step can be expensive. A method for sampling a discrete MDP from the posterior is implemented in algorithm 16.9."
+
+chunks = createChunksFromDoc(doc, 5)
+
+print("Length of Chunks: ", len(chunks))
+print("Chunks: ", chunks)
