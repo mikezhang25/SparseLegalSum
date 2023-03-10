@@ -41,7 +41,6 @@ class Summarizer:
 
     def chunk(self, document, chunk_size=1024):
         """ Splits up a document into chunks while perserving sentence structure """
-        print("Chunking document...")
         sent_encodes = [self.tokenizer.encode(
             sent, max_length=1024, truncation=True) for sent in sent_tokenize(document)]
         max_sent_len = max([len(x) for x in sent_encodes])
@@ -71,21 +70,22 @@ class Summarizer:
 
     def process(self, document, chunk_size=1024):
         """ Given document reduces its size via chunking summarization """
-        print("Processing document")
         chunks = self.chunk(document, chunk_size=chunk_size)
         target_len = self.MAX_OUTPUT_LEN // len(chunks)
         output = ""
         for chunk in tqdm(chunks, leave=False, desc=f"Summarizing document of {len(chunks)} chunks"):
-            output += self.summarize(chunk, target_len // 2, (target_len * 2) // 3)
+            output += self.summarize(chunk, target_len // 4, target_len // 2)
         return output
 
     def transform_dataset(self, filename):
         billsum = load_dataset("billsum")
         summarized = {}
+        print(billsum["train"][10])
+        return
         for split in ["train", "test", "ca_test"]:
             dataset = billsum[split]
             summarized[split] = []
-            for data in tqdm(dataset, desc=f"Mapping {split} set..."):
+            for data in tqdm(dataset, leave=False, desc=f"Mapping {split} set..."):
                 summarized[split].append({
                     "text": self.process(data["text"]),
                     "summary": data["summary"],
