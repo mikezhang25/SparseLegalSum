@@ -68,19 +68,20 @@ class Summarizer:
         #print([len(x) for x in sent_encodes])
         return chunks
 
-    def process(self, document, chunk_size=1024):
+    def process(self, document, min_chunk_size=100, chunk_size=1024):
         """ Given document reduces its size via chunking summarization """
         chunks = self.chunk(document, chunk_size=chunk_size)
         target_len = self.MAX_OUTPUT_LEN // len(chunks)
+        target_len = max(min_chunk_size, target_len)
         output = ""
         for chunk in tqdm(chunks, leave=False, desc=f"Summarizing document of {len(chunks)} chunks"):
-            output += self.summarize(chunk, target_len // 4, target_len // 2)
+            output += self.summarize(chunk, 0, target_len)
         return output
 
     def transform_dataset(self, filename):
         billsum = load_dataset("billsum")
         summarized = {}
-        print(billsum["train"][10])
+        print(billsum["train"][11])
         return
         for split in ["train", "test", "ca_test"]:
             dataset = billsum[split]
