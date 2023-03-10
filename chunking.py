@@ -76,7 +76,7 @@ class Summarizer:
         target_len = self.MAX_OUTPUT_LEN // len(chunks)
         output = ""
         for chunk in tqdm(chunks, leave=False, desc=f"Summarizing document of {len(chunks)} chunks"):
-            output += self.summarize(chunk, target_len // 2, target_len)
+            output += self.summarize(chunk, target_len // 2, (target_len * 2) // 3)
         return output
 
     def transform_dataset(self, filename):
