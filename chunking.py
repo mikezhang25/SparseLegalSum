@@ -11,10 +11,12 @@ from tqdm import tqdm
 class Summarizer:
     def __init__(self) -> None:
         # https://huggingface.co/nsi319/legal-pegasus
-        print("Initializing Summarizer...")
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Initializing Summarizer on {self.device}...")
         self.tokenizer = AutoTokenizer.from_pretrained("nsi319/legal-pegasus")
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             "nsi319/legal-pegasus")
+        self.model.to(self.device)
         # hyperparameters
         self.N_BEAMS = 9
         self.NO_REPEAT_NGRAM = 3
@@ -76,6 +78,7 @@ class Summarizer:
         return output
 
     def transform_dataset(self):
+        # make this into a list of dictionaries then json dump
         pass
 
 
