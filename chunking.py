@@ -79,10 +79,12 @@ class Summarizer:
         return output
 
     def transform_dataset(self, filename):
-        billsum = load_dataset("billsum")
+        billsum = {
+            "train": load_dataset("billsum", split="train[:10]"),
+            "test": load_dataset("billsum", split="test[:10]"),
+            "ca_test": load_dataset("billsum", split="ca_test[:10]")
+        }
         summarized = {}
-        print(billsum["train"][11])
-        return
         for split in ["train", "test", "ca_test"]:
             dataset = billsum[split]
             summarized[split] = []
