@@ -25,6 +25,7 @@ class Summarizer:
 
     def summarize(self, tokenized, min_length, max_length):
         """ Summarizes a given **tokenized** chunk of text to a target length """
+        tokenized.to(self.device)
         summary_ids = self.model.generate(tokenized,
                                           num_beams=self.N_BEAMS,
                                           no_repeat_ngram_size=self.NO_REPEAT_NGRAM,
@@ -70,9 +71,7 @@ class Summarizer:
         """ Given document reduces its size via chunking summarization """
         print("Processing document")
         chunks = self.chunk(document, chunk_size=chunk_size)
-        print(len(chunks))
         target_len = self.MAX_OUTPUT_LEN // len(chunks)
-        print(target_len)
         output = ""
         print("Summarizing chunks")
         for chunk in tqdm(chunks):
