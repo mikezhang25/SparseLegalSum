@@ -6,6 +6,8 @@ from nltk.tokenize import sent_tokenize
 from evaluate import evaluator
 import torch
 from tqdm import tqdm
+from datasets import load_dataset
+import json
 
 
 class Summarizer:
@@ -48,7 +50,7 @@ class Summarizer:
                 f"Cannot chunk into sizes smaller than a single sentence. Max sentence is length {max_sent_len}")
         chunks = []
         curr_chunk = []
-        for sentence in tqdm(sent_encodes):
+        for sentence in tqdm(sent_encodes, leave=False, desc=f"Chunking document of {len(sent_encodes)} sentences"):
             # print(
             #    f"Current chunk of size {len(curr_chunk)}, {curr_chunk}, current sentence of size {len(sentence)}")
             if len(curr_chunk) + len(sentence) > chunk_size:
@@ -73,14 +75,25 @@ class Summarizer:
         chunks = self.chunk(document, chunk_size=chunk_size)
         target_len = self.MAX_OUTPUT_LEN // len(chunks)
         output = ""
-        print("Summarizing chunks")
-        for chunk in tqdm(chunks):
+        for chunk in tqdm(chunks, leave=False, desc=f"Summarizing document of {len(chunks)} chunks"):
             output += self.summarize(chunk, target_len // 2, target_len)
         return output
 
-    def transform_dataset(self):
+    def transform_dataset(self, filename):
+        billsum = load_dataset("billsum")
+        summarized = {}
+        for split in ["train", "test", "ca_test"]:
+            dataset = billsum[split]
+            summarized[split] = []
+            for data in tqdm(dataset, desc=f"Mapping {split} set..."):
+                summarized[split].append({
+                    "text": self.process(data["text"]),
+                    "summary": data["summary"],
+                    "title": data["title"]
+                })
         # make this into a list of dictionaries then json dump
-        pass
+        with open(filename, "w") as f:
+            json.dump(summarized, f)
 
 
 if __name__ == "__main__":
@@ -109,7 +122,8 @@ if __name__ == "__main__":
     summary = [summarizer.tokenizer.decode(
         g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids][0]
     """
-    results = summarizer.process(text, chunk_size=100)
+    # results = summarizer.process(text, chunk_size=100)
+    summarizer.transform_dataset("summarized")
 
     # decoded = [summarizer.tokenizer.decode(
     #    text, skip_special_tokens=True, clean_up_tokenization_spaces=False) for text in sent_tokens]
