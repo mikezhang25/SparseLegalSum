@@ -53,12 +53,14 @@ class Summarizer:
             if len(curr_chunk) + len(sentence) > chunk_size:
                 assert(len(curr_chunk) > 0)
                 # declare new chunk
-                chunks.append(torch.tensor(curr_chunk).reshape((1, -1)))
+                chunks.append(torch.tensor(curr_chunk).reshape(
+                    (1, -1)).to(self.device))
                 curr_chunk = []
             # append to existing chunk
             curr_chunk += sentence
         if len(curr_chunk) > 0:
-            chunks.append(torch.tensor(curr_chunk).reshape(1, -1))
+            chunks.append(torch.tensor(
+                curr_chunk).reshape(1, -1).to(self.device))
         # assert(sum([len(x) for x in sent_encodes])
         #       == sum([len(x) for x in chunks]))
         #print([len(x) for x in sent_encodes])
