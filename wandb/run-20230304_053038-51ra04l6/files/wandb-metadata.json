@@ -1,0 +1,85 @@
+{
+    "os": "Linux-5.15.0-1015-aws-x86_64-with-glibc2.29",
+    "python": "3.8.10",
+    "heartbeatAt": "2023-03-04T05:30:38.914346",
+    "startedAt": "2023-03-04T05:30:38.545163",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/mikezhang25/SparseLegalSum.git",
+        "commit": "79eef01b02e29219c29882a877833898d5e848c0"
+    },
+    "email": null,
+    "root": "/home/ubuntu/SparseLegalSum",
+    "host": "ip-172-31-2-215",
+    "username": "ubuntu",
+    "executable": "/usr/bin/python3",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2859.503125,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3276.725,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2799.9,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 72.63036346435547,
+        "used": 69.18067169189453
+    },
+    "gpu": "NVIDIA A10G",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA A10G",
+            "memory_total": 24146608128
+        }
+    ],
+    "memory": {
+        "total": 31.008075714111328
+    }
+}

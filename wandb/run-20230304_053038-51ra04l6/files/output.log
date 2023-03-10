@@ -1,0 +1,34 @@
+
+  0%|                                                                                     | 0/14214 [00:00<?, ?it/s]Attention type 'block_sparse' is not possible if sequence_length: 512 <= num global tokens: 2 * config.block_size + min. num sliding tokens: 3 * config.block_size + config.num_random_blocks * config.block_size + additional buffer: config.num_random_blocks * config.block_size = 704 with config.block_size = 64, config.num_random_blocks = 3. Changing attention type to 'original_full'...
+Traceback (most recent call last):
+  File "train.py", line 213, in <module>
+    legalModel.train_model("billsum-finetuned-freezed")
+  File "train.py", line 136, in train_model
+    trainer.train()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 1543, in train
+    return inner_training_loop(
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 1791, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 2549, in training_step
+    self.scaler.scale(loss).backward()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/_tensor.py", line 488, in backward
+    torch.autograd.backward(
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/autograd/__init__.py", line 197, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn
+Traceback (most recent call last):
+  File "train.py", line 213, in <module>
+    legalModel.train_model("billsum-finetuned-freezed")
+  File "train.py", line 136, in train_model
+    trainer.train()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 1543, in train
+    return inner_training_loop(
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 1791, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 2549, in training_step
+    self.scaler.scale(loss).backward()
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/_tensor.py", line 488, in backward
+    torch.autograd.backward(
+  File "/home/ubuntu/.local/lib/python3.8/site-packages/torch/autograd/__init__.py", line 197, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn

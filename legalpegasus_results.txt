@@ -1,0 +1,2 @@
+Setting up finetuning on cuda
+{'rouge1': 0.3251144259986141, 'rouge2': 0.13496271472067653, 'rougeL': 0.2162933929171048, 'rougeLsum': 0.2467402228986073, 'total_time_in_seconds': 170.675449857, 'samples_per_second': 0.5859073468608681, 'latency_in_seconds': 1.70675449857}
