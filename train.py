@@ -10,7 +10,7 @@ from datasets import load_dataset
 import evaluate
 from evaluate import evaluator
 
-
+from createChunks import createChunksfromDataset
 class LegalModel:
     def __init__(self, checkpoint="google/bigbird-pegasus-large-arxiv") -> None:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
@@ -25,7 +25,9 @@ class LegalModel:
             "google/bigbird-pegasus-large-arxiv")
         # self.tokenizer = AutoTokenizer.from_pretrained(
         #    "nsi319/legal-pegasus")
-        self.load_billsum_dataset()
+        # self.load_billsum_dataset()
+        # self.load_chunked_dataset()
+        self.load_overlapping_chunked_dataset()
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
@@ -36,6 +38,26 @@ class LegalModel:
         self.VOCAB_SIZE = 35000
         self.MAX_LENGTH = 512
         self.MAX_TARGET_SIZE = 512
+
+
+    def load_chunked_dataset(self):
+        self.train, self.test = createChunksfromDataset("chunked")
+        print("Train: ", self.train)
+        print("Test: ", self.test)
+
+
+    def load_overlapping_chunked_dataset(self):
+        self.train, self.test = createChunksfromDataset("chunked", k_sentences=3)
+ 
+    def load_summarized_dataset(self):
+        trainfile = "summarytrain.json"
+        testfile = "summarytest.json"
+
+        # print("Datafiles", data_files)
+        self.train = load_dataset("json", data_files=trainfile, split="train")
+        self.test = load_dataset("json", data_files=testfile, split="train")
+        print(self.test)
+        print(self.train)
 
     def load_arxiv_dataset(self):
         self.train = load_dataset(
@@ -54,6 +76,10 @@ class LegalModel:
             "billsum", split="train")
         self.test = load_dataset(
             "billsum", split="test")
+        
+        print(self.train)
+        print(self.test)
+    
 
     def compute_metrics(self, eval_pred):
         predictions, labels = eval_pred
@@ -82,7 +108,8 @@ class LegalModel:
     def train_model(self, output_dir):
         # freeze layers before training
         for param in self.model.base_model.parameters():
-            param.requires_grad = False
+            # param.requires_grad = False
+            param.requires_grad = True
         # tokenize data
         tokenized_train = self.train.map(
             self.billsum_preprocess_function,
@@ -97,7 +124,7 @@ class LegalModel:
         args = Seq2SeqTrainingArguments(
             output_dir=output_dir,
             evaluation_strategy="epoch",
-            report_to="wandb",
+            # report_to="wandb",
             learning_rate=5.6e-5,
             per_device_train_batch_size=batch_size,
             per_device_eval_batch_size=batch_size,

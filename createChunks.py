@@ -10,12 +10,9 @@ def load_billsum_dataset():
     return load_dataset("billsum")
 
 
-def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_title=False, k_sentences=None, appendTitle=False): 
-    dataset = load_billsum_dataset()    
-    dataEntries = []  # where every dictionary entry will be stored
-    # default
-
-    for doc in dataset["train"]: 
+def _docsToDict(docs, name_of_split, size_of_chunks=4096, appendTitle=False, num_of_chunks=None, k_sentences=None): 
+    dataEntries = []
+    for doc in docs: 
         if num_of_chunks != None: 
             size_of_chunks = math.ceil(len(doc["text"])/num_of_chunks) # applies to this specific document
         sent_text = nltk.sent_tokenize(doc["text"])
@@ -33,6 +30,7 @@ def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_titl
             if condition: 
                 # already reached the maximum size for this chunk
                 mapping = {"text": curChunk, "summary": doc["summary"]}
+                # dataEntries[name_of_split].append(mapping)
                 dataEntries.append(mapping)
                 runningLen = 0
                 curChunk = ""
@@ -54,15 +52,32 @@ def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_titl
         # concatenate any non-full chunks that remain
         if runningLen > 0: 
             mapping = {"text": curChunk, "summary": doc["summary"]}
+            # dataEntries[name_of_split].append(mapping)
             dataEntries.append(mapping)
 
-    with open (filename, "w") as f: 
-        json.dump(dataEntries, f)
+    # if (name_of_split == "test"):
+    #     print("Test Entries: ", dataEntries[name_of_split])
+    return dataEntries
+    
 
 
 
-def JSONToDataset(filename): 
-    return load_dataset("json", data_files=filename, split="train")
+def chunksToJSON(filename, size_of_chunks=4096, num_of_chunks=None, include_title=False, k_sentences=None, appendTitle=False): 
+    dataset = load_billsum_dataset()    
+      # where every dictionary entry will be stored
+    # default
+    
+    trainEntries = _docsToDict(dataset["train"], name_of_split="train")
+    testEntries = _docsToDict(dataset["test"], name_of_split="test")
+
+    with open (filename + 'train' + '.json', "w") as f: 
+        json.dump(trainEntries, f)
+
+    with open (filename + 'test' + '.json', "w") as f: 
+        json.dump(testEntries, f)
+
+def JSONToDataset(filename, name_of_split): 
+    return load_dataset("json", data_files=filename, split=name_of_split)
 
 def createChunksfromDataset(filename, size_of_chunks=4096, num_of_chunks=None, recreate=False, k_sentences=None, appendTitle=False): 
     """
@@ -88,8 +103,11 @@ def createChunksfromDataset(filename, size_of_chunks=4096, num_of_chunks=None, r
                             ) 
         
     # json file exists at this point
-    newDataset = JSONToDataset(filename)
-    return newDataset
+    testName = filename + 'test' + '.json'
+    trainName = filename + 'train' + '.json'
+    testDataset = JSONToDataset(testName, "train")
+    trainDataset = JSONToDataset(trainName, "train")
+    return trainDataset, testDataset
 
 
 def createChunksFromDoc(doc, num_of_chunks, k_sentences=None): 
@@ -170,34 +188,34 @@ This will lead to untested behavior.
 
 '''
 
-filename = "chunkedDataset.json" # intermediate JSON file
-size_of_chunks = 4096
-num_of_chunks = 3
-k_sentences = 3
-include_title = True
+
+if __name__ == "__main__": 
+    filename = "test" # intermediate JSON file
+    size_of_chunks = 4096
+    num_of_chunks = 3
+    k_sentences = 3
+    include_title = True
+
+    # actual dataset
+    train, test = createChunksfromDataset(filename, 
+                            recreate=True,
+                            )
+    print("Test: ", test)
+    print("Train: ", train)
 
 
-# actual dataset
-dataset = createChunksfromDataset(filename, 
-                        recreate=True,
-                        k_sentences=k_sentences, 
-                        appendTitle=include_title
-                        )
+    '''
+    The following implementation is for one document. It returns a list of strings. 
+    The size of the list is <= num_of_chunks. 
+    '''
 
+    # for testing: allows me to see a few entries at a time
+    # with open ("test.json", 'w') as f: 
+    #     json.dump(dataset[0:5], f, indent=4)
 
-'''
-The following implementation is for one document. It returns a list of strings. 
-The size of the list is <= num_of_chunks. 
-'''
+    # doc = "An alternative to solving for the optimal value function over the belief space is to use posterior sampling,8 which was originally introduced in the context of exploration in bandit problems in section 15.4.9 Here, we draw a sample θ from the current belief b and then solve for the best action, assuming that θ is the true model. We then update our belief, draw a new sample, and solve the corresponding MDP. Example 16.4 provides an example instance of this. An advantage of posterior sampling is that we do not have to decide on heuristic exploration parameters. However, solving the MDP at every step can be expensive. A method for sampling a discrete MDP from the posterior is implemented in algorithm 16.9."
 
-# for testing: allows me to see a few entries at a time
-with open ("test.json", 'w') as f: 
-    json.dump(dataset[0:5], f, indent=4)
+    # chunks = createChunksFromDoc(doc, 5)
 
-
-doc = "An alternative to solving for the optimal value function over the belief space is to use posterior sampling,8 which was originally introduced in the context of exploration in bandit problems in section 15.4.9 Here, we draw a sample θ from the current belief b and then solve for the best action, assuming that θ is the true model. We then update our belief, draw a new sample, and solve the corresponding MDP. Example 16.4 provides an example instance of this. An advantage of posterior sampling is that we do not have to decide on heuristic exploration parameters. However, solving the MDP at every step can be expensive. A method for sampling a discrete MDP from the posterior is implemented in algorithm 16.9."
-
-chunks = createChunksFromDoc(doc, 5)
-
-print("Length of Chunks: ", len(chunks))
-print("Chunks: ", chunks)
+    # print("Length of Chunks: ", len(chunks))
+    # print("Chunks: ", chunks)
