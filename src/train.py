@@ -262,8 +262,8 @@ if __name__ == "__main__":
         legalModel.train_model(args.model_path)
     elif args.mode == "test":
         # check that checkpoint file exists
-        assert os.path.isfile(
-            args.model_path), f"[TEST ERROR] {args.model_path} is a valid checkpoint file"
+        assert os.path.isdir(
+            args.model_path), f"[TEST ERROR] checkpoint {args.model_path} does not exist"
         print(f"Entering test mode, loading model from {args.model_path}")
         legalModel = LegalModel(args.dataset, checkpoint=args.model_path)
         results = legalModel.evaluate_model()
