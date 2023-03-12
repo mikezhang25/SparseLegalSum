@@ -70,7 +70,7 @@ class LegalModel:
         self.train = load_dataset(
             "json", data_files=f"{root_filename}_train.json", split="train")
         self.test = load_dataset(
-            "json", data_files=f"{root_filename}_train.json", split="test")
+            "json", data_files=f"{root_filename}_test.json", split="train")
 
     def load_arxiv_dataset(self):
         self.train = load_dataset(

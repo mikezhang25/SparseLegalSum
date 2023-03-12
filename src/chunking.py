@@ -129,7 +129,6 @@ if __name__ == "__main__":
         g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids][0]
     """
     # results = summarizer.process(text, chunk_size=100)
-    summarizer.transform_dataset("summarized")
 
     # decoded = [summarizer.tokenizer.decode(
     #    text, skip_special_tokens=True, clean_up_tokenization_spaces=False) for text in sent_tokens]
