@@ -40,7 +40,7 @@ class LegalModel:
             self.load_billsum_dataset()
         else:
             raise Exception(
-                f"Invalid dataset {dataset} specified during LegalModel initialization")
+                f"Invalid dataset {dataset} specified during LegalModel initialization, options are non-overlap, overlap, summarized, billsum")
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
