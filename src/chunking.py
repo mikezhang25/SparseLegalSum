@@ -9,6 +9,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 import json
 
+
 class Summarizer:
     def __init__(self) -> None:
         # https://huggingface.co/nsi319/legal-pegasus
