@@ -9,10 +9,13 @@ from nltk.tokenize import sent_tokenize
 from datasets import load_dataset
 import evaluate
 from evaluate import evaluator
+import argparse
 
 from createChunks import createChunksfromDataset
+
+
 class LegalModel:
-    def __init__(self, checkpoint="google/bigbird-pegasus-large-arxiv") -> None:
+    def __init__(self, dataset, checkpoint="google/bigbird-pegasus-large-arxiv") -> None:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Setting up finetuning on {self.device}")
@@ -27,10 +30,21 @@ class LegalModel:
         #    "nsi319/legal-pegasus")
         # self.load_billsum_dataset()
         # self.load_chunked_dataset()
-        self.load_overlapping_chunked_dataset()
+        if dataset == "non-overlap":
+            self.load_overlapping_chunked_dataset()
+        elif dataset == "overlap":
+            self.load_overlapping_chunked_dataset()
+        elif dataset == "summarized":
+            self.load_summarized_dataset()
+        elif dataset == "billsum":
+            self.load_billsum_dataset()
+        else:
+            raise Exception(
+                f"Invalid dataset {dataset} specified during LegalModel initialization")
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
+        wandb.init(project="LegalSparseSum")
         # hyperparameters
         self.checkpoint = checkpoint
         self.BATCH_SIZE = 10000
@@ -39,25 +53,24 @@ class LegalModel:
         self.MAX_LENGTH = 512
         self.MAX_TARGET_SIZE = 512
 
-
     def load_chunked_dataset(self):
         self.train, self.test = createChunksfromDataset("chunked")
         print("Train: ", self.train)
         print("Test: ", self.test)
 
-
     def load_overlapping_chunked_dataset(self):
-        self.train, self.test = createChunksfromDataset("chunked", k_sentences=3)
- 
+        self.train, self.test = createChunksfromDataset(
+            "chunked", k_sentences=3)
+
     def load_summarized_dataset(self):
-        trainfile = "summarytrain.json"
-        testfile = "summarytest.json"
+        print("Loading in summarized dataset")
+        root_filename = input("Root name for summarized document: ")
 
         # print("Datafiles", data_files)
-        self.train = load_dataset("json", data_files=trainfile, split="train")
-        self.test = load_dataset("json", data_files=testfile, split="train")
-        print(self.test)
-        print(self.train)
+        self.train = load_dataset(
+            "json", data_files=f"{root_filename}_train.json", split="train")
+        self.test = load_dataset(
+            "json", data_files=f"{root_filename}_train.json", split="test")
 
     def load_arxiv_dataset(self):
         self.train = load_dataset(
@@ -76,10 +89,9 @@ class LegalModel:
             "billsum", split="train")
         self.test = load_dataset(
             "billsum", split="test")
-        
+
         print(self.train)
         print(self.test)
-    
 
     def compute_metrics(self, eval_pred):
         predictions, labels = eval_pred
@@ -122,9 +134,13 @@ class LegalModel:
         logging_steps = len(tokenized_train) // batch_size
         # model_name = self.checkpoint.split("/")[-1]
         args = Seq2SeqTrainingArguments(
+            report_to="wandb",
             output_dir=output_dir,
-            evaluation_strategy="epoch",
-            # report_to="wandb",
+            overwrite_output_dir=False,
+            evaluation_strategy="steps",
+            logging_steps=100,
+            eval_steps=500,
+            eval_accumulation_steps=1,
             learning_rate=5.6e-5,
             per_device_train_batch_size=batch_size,
             per_device_eval_batch_size=batch_size,
@@ -133,9 +149,7 @@ class LegalModel:
             num_train_epochs=num_train_epochs,
             predict_with_generate=True,
             fp16=(self.device == "cuda"),
-            optim="adafactor",
-            # compute_objective=lambda x: x,
-            logging_steps=logging_steps
+            optim="adafactor"
         )
 
         tokenized_train = tokenized_train.remove_columns(
@@ -157,7 +171,7 @@ class LegalModel:
             eval_dataset=tokenized_test,
             data_collator=self.data_collator,
             tokenizer=self.tokenizer,
-            compute_metrics=self.compute_metrics,
+            compute_metrics=self.compute_metrics
         )
         print("Training")
         trainer.train()
@@ -222,22 +236,41 @@ class LegalModel:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", help="train or evaluate a given model")
+    parser.add_argument(
+        "model_path", help="path to directory to save model file (train model) or saved model file (test mode)")
+    parser.add_argument(
+        "dataset", help="specifies which dataset we train/test on")
+    args = parser.parse_args()
+
     RUN_NAME = "chunking_finetune"
     # set up logging
     # set the wandb project where this run will be logged
     os.environ["WANDB_PROJECT"] = RUN_NAME
-
     # save your trained model checkpoint to wandb
     os.environ["WANDB_LOG_MODEL"] = "true"
-
     # turn off watch to log faster
     os.environ["WANDB_WATCH"] = "false"
-    #pretrain = Pretraining()
-    #tokens = pretrain.tokenizer("Sample text is true")
 
-    legalModel = LegalModel()
+    if args.mode == "train":
+        # check that path is a folder and is empty
+        assert not os.path.isdir(args.model_path) or os.listdir(
+            args.model_path) == 0, f"[TRAIN ERROR] {args.model_path} is not an empty directory"
+        print(f"Entering train mode, saving model to {args.model_path}")
+        legalModel = LegalModel(args.dataset)
+        legalModel.train_model(args.model_path)
+    elif args.mode == "test":
+        # check that checkpoint file exists
+        assert os.path.isfile(
+            args.model_path), f"[TEST ERROR] {args.model_path} is a valid checkpoint file"
+        print(f"Entering test mode, loading model from {args.model_path}")
+        legalModel = LegalModel(args.dataset, checkpoint=args.model_path)
+        results = legalModel.evaluate_model()
+        print(results)
+    else:
+        print(f"Unrecognized mode {args.mode} specified")
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")
-    legalModel.train_model("billsum-finetuned-freezed")
     # print(legalModel.evaluate_model())
     # print(legalModel.sample_summary())
     # wandb.finish()
