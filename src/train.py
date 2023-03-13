@@ -31,7 +31,7 @@ class LegalModel:
         # self.load_billsum_dataset()
         # self.load_chunked_dataset()
         if dataset == "non-overlap":
-            self.load_overlapping_chunked_dataset()
+            self.load_chunked_dataset()
         elif dataset == "overlap":
             self.load_overlapping_chunked_dataset()
         elif dataset == "summarized":
