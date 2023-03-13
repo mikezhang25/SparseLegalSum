@@ -242,7 +242,8 @@ if __name__ == "__main__":
         "model_path", help="path to directory to save model file (train model) or saved model file (test mode)")
     parser.add_argument(
         "dataset", help="specifies which dataset we train/test on")
-    parser.add_argument("--checkpoint", nargs=1, help="Load model from an existing checkpoint")
+    parser.add_argument("--checkpoint", nargs=1,
+                        help="Load model from an existing checkpoint")
     args = parser.parse_args()
     checkpoint = "google/bigbird-pegasus-large-arxiv"
 
@@ -261,9 +262,10 @@ if __name__ == "__main__":
             args.model_path) == 0, f"[TRAIN ERROR] {args.model_path} is not an empty directory"
         print(f"Entering train mode, saving model to {args.model_path}")
         if args.checkpoint:
-            checkpoint = args.checkpoint
-            assert os.path.isdir(checkpoint), f"[TRAIN ERROR] {checkpoint} is not an valid checkpoint"
-        legalModel = LegalModel(args.dataset, checkpoint = checkpoint)
+            checkpoint = args.checkpoint[0]
+            assert os.path.isdir(
+                checkpoint), f"[TRAIN ERROR] {checkpoint} is not an valid checkpoint"
+        legalModel = LegalModel(args.dataset, checkpoint=checkpoint)
         legalModel.train_model(args.model_path)
     elif args.mode == "test":
         # check that checkpoint file exists
