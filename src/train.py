@@ -15,10 +15,10 @@ from createChunks import createChunksfromDataset
 
 
 class LegalModel:
-    def __init__(self, dataset, checkpoint="google/bigbird-pegasus-large-arxiv") -> None:
+    def __init__(self, dataset, checkpoint) -> None:
         # TODO: Add more modularity to FineTuning Class & Make Legal Model Class
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Setting up finetuning on {self.device}")
+        print(f"Loading model {checkpoint} on {self.device}")
         # self.model = BigBirdPegasusForConditionalGeneration.from_pretrained(
         #    checkpoint)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
@@ -242,7 +242,9 @@ if __name__ == "__main__":
         "model_path", help="path to directory to save model file (train model) or saved model file (test mode)")
     parser.add_argument(
         "dataset", help="specifies which dataset we train/test on")
+    parser.add_argument("--checkpoint", nargs=1, help="Load model from an existing checkpoint")
     args = parser.parse_args()
+    checkpoint = "google/bigbird-pegasus-large-arxiv"
 
     RUN_NAME = "chunking_finetune"
     # set up logging
@@ -258,7 +260,10 @@ if __name__ == "__main__":
         assert not os.path.isdir(args.model_path) or os.listdir(
             args.model_path) == 0, f"[TRAIN ERROR] {args.model_path} is not an empty directory"
         print(f"Entering train mode, saving model to {args.model_path}")
-        legalModel = LegalModel(args.dataset)
+        if args.checkpoint:
+            checkpoint = args.checkpoint
+            assert os.path.isdir(checkpoint), f"[TRAIN ERROR] {checkpoint} is not an valid checkpoint"
+        legalModel = LegalModel(args.dataset, checkpoint = checkpoint)
         legalModel.train_model(args.model_path)
     elif args.mode == "test":
         # check that checkpoint file exists
