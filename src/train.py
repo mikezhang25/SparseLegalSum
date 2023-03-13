@@ -55,8 +55,6 @@ class LegalModel:
 
     def load_chunked_dataset(self):
         self.train, self.test = createChunksfromDataset("chunked")
-        print("Train: ", self.train)
-        print("Test: ", self.test)
 
     def load_overlapping_chunked_dataset(self):
         self.train, self.test = createChunksfromDataset(
