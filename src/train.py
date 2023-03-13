@@ -41,6 +41,7 @@ class LegalModel:
         else:
             raise Exception(
                 f"Invalid dataset {dataset} specified during LegalModel initialization, options are non-overlap, overlap, summarized, billsum")
+        print(f"Loaded in dataset {dataset}")
         self.metric = evaluate.load("rouge")
         self.data_collator = DataCollatorForSeq2Seq(
             self.tokenizer, model=self.model)
