@@ -79,10 +79,14 @@ class Summarizer:
         return output
 
     def transform_dataset(self, filename):
+        start = input("Start index/percentage: ")
+        end = input("End index/percentage: ")
+        split = f"[{start}:{end}]"
+        print(f"Processing billsum{split}")
         billsum = {
-            "train": load_dataset("billsum", split="train[:10]"),
-            "test": load_dataset("billsum", split="test[:10]"),
-            "ca_test": load_dataset("billsum", split="ca_test[:10]")
+            "train": load_dataset("billsum", split=f"train{split}"),
+            "test": load_dataset("billsum", split=f"test{split}"),
+            "ca_test": load_dataset("billsum", split=f"ca_test{split}")
         }
         summarized = {}
         for split in ["train", "test", "ca_test"]:
