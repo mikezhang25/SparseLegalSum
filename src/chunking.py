@@ -82,7 +82,7 @@ class Summarizer:
         start = input("Start index/percentage: ")
         end = input("End index/percentage: ")
         split = f"[{start}:{end}]"
-        print(f"Processing billsum{split}")
+        print(f"Processing billsum{split}, saving to {filename}")
         billsum = {
             "train": load_dataset("billsum", split=f"train{split}"),
             "test": load_dataset("billsum", split=f"test{split}"),
