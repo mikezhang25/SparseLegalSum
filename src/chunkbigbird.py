@@ -17,7 +17,7 @@ MAX_CHUNK_SIZE = 4096
 
 
 class ChunkingBigBird(PreTrainedModel):
-    def __init__(self, checkpoint, overlap=0):
+    def __init__(self, checkpoint, overlap=100):
         super(ChunkingBigBird, self).__init__(
             config=BigBirdPegasusConfig.from_pretrained("google/bigbird-pegasus-large-arxiv"))
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
@@ -25,6 +25,7 @@ class ChunkingBigBird(PreTrainedModel):
         self.tokenizer = AutoTokenizer.from_pretrained(
             "google/bigbird-pegasus-large-arxiv")
         self.load_billsum_dataset()
+        self.overlap = overlap
 
     def load_billsum_dataset(self):
         self.train = load_dataset(
@@ -34,13 +35,14 @@ class ChunkingBigBird(PreTrainedModel):
 
     def forward(self, sent_id, mask):
         """ Process input texts by chunks and returns a concatenated summary """
-        chunks = [sent_id[i * MAX_CHUNK_SIZE:(i + 1) * MAX_CHUNK_SIZE] for i in range(
-            (len(sent_id) + MAX_CHUNK_SIZE - 1) // MAX_CHUNK_SIZE)]
-        chunk_masks = [mask[i * MAX_CHUNK_SIZE:(i + 1) * MAX_CHUNK_SIZE] for i in range(
-            (len(mask) + MAX_CHUNK_SIZE - 1) // MAX_CHUNK_SIZE)]
+        chunks = [sent_id[i * MAX_CHUNK_SIZE - (self.overlap * i): (i + 1) * MAX_CHUNK_SIZE - (self.overlap * i)] for i in range
+            (1 + (len(sent_id) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
+        chunk_masks = [mask[i * MAX_CHUNK_SIZE - (self.overlap * i): (i + 1) * MAX_CHUNK_SIZE - (self.overlap * i)] for i in range
+            (1 + (len(mask) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
         # concat the outputs into one
         results = [self.model(chunks[i], mask=chunk_masks[i])
-                   for i in range(len(chunks))]
+                for i in range(len(chunks))]
+            
         return list(itertools.chain.from_iterable(results))
 
     def evaluate_model(self):
@@ -57,5 +59,5 @@ if __name__ == "__main__":
     if checkpoint == "":
         checkpoint = "google/bigbird-pegasus-large-arxiv"
     chunkbird = ChunkingBigBird(checkpoint)
-    chunkbird.to(device)
+    # chunkbird.to(device)
     print(chunkbird.evaluate_model())

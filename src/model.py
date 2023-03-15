@@ -62,32 +62,7 @@ class Model():
         )
 
         trainer.train()
-        # training_args = TrainingArguments(
-        #     output_dir="trainer_dir",
-        #     per_device_train_batch_size=16,
-        #     per_device_eval_batch_size=16,
-        #     num_train_epochs=3,
-        #     evaluation_strategy="epoch", # run validation at the end of each epoch
-        #     learning_rate=2e-5,
-        #     # load_best_model_at_end=True,
-        #     seed=224, 
-        #     bf16="no-cuda"
-        # )
-
-        # trainer = Trainer(
-        #     model=self.model, 
-        #     args=training_args,
-        #     train_dataset=tokenized_test_set, 
-        #     eval_dataset=tokenized_eval_set, 
-        #     tokenizer = self.tokenizer, 
-        #     compute_metrics=self.compute_metrics, 
-        # )
-
-        # trainer.train()
-
-    # def tokenize_function(self, examples):
-    #     return self.tokenizer(examples["sources"], padding=True, truncation=True, is_split_into_words=True)
-
+        
     def lexsum_preprocess_function(self, examples): 
         res = ""
         for doc in examples["sources"]:
