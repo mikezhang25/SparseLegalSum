@@ -240,8 +240,8 @@ class LegalModel:
 
     def summarize(self, text, min_length, max_length):
         """ Summarizes a given chunk of text to a target length """
-        tokenized = self.tokenizer.encode(
-            text, max_length=4096, truncation=True)
+        tokenized = self.tokenizer(
+            text, max_length=4096, truncation=True, return_tensors="pt")
         tokenized.to(self.device)
         summary_ids = self.model.generate(tokenized,
                                           num_beams=self.N_BEAMS,
