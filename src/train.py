@@ -301,7 +301,8 @@ if __name__ == "__main__":
         #    args.model_path), f"[EVAL ERROR] checkpoint {args.model_path} does not exist"
         print(f"Entering eval mode, loading model from {args.model_path}")
         legalModel = LegalModel(args.dataset, checkpoint=args.model_path)
-        summary = legalModel.summarize(legalModel.test.select(range(1)))
+        summary = legalModel.summarize(
+            legalModel.test.select(range(1)), 0, 200)
         print(summary)
     else:
         print(f"Unrecognized mode {args.mode} specified")
