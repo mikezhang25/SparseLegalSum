@@ -243,7 +243,7 @@ class LegalModel:
         tokenized = self.tokenizer(
             text, max_length=4096, truncation=True, return_tensors="pt")
         tokenized.to(self.device)
-        summary_ids = self.model.generate(tokenized,
+        summary_ids = self.model.generate(**tokenized,
                                           num_beams=self.N_BEAMS,
                                           no_repeat_ngram_size=self.NO_REPEAT_NGRAM,
                                           length_penalty=self.PENALTY,
