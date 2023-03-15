@@ -17,9 +17,9 @@ MAX_CHUNK_SIZE = 4096
 
 
 class ChunkingBigBird(PreTrainedModel):
-    def __init__(self, checkpoint, overlap):
+    def __init__(self, checkpoint, overlap=0):
         super(ChunkingBigBird, self).__init__(
-            config=BigBirdPegasusConfig.from_pretrained(checkpoint))
+            config=BigBirdPegasusConfig.from_pretrained("google/bigbird-pegasus-large-arxiv"))
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             checkpoint)
         self.tokenizer = AutoTokenizer.from_pretrained(
