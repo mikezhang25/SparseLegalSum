@@ -53,6 +53,11 @@ class LegalModel:
         self.VOCAB_SIZE = 35000
         self.MAX_LENGTH = 512
         self.MAX_TARGET_SIZE = 512
+        # hyperparameters
+        self.N_BEAMS = 9
+        self.NO_REPEAT_NGRAM = 3
+        self.PENALTY = 5.0
+        self.MAX_OUTPUT_LEN = 4096
 
     def load_chunked_dataset(self):
         self.train, self.test = createChunksfromDataset("chunked")
@@ -233,6 +238,22 @@ class LegalModel:
             summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         return output
 
+    def summarize(self, text, min_length, max_length):
+        """ Summarizes a given chunk of text to a target length """
+        tokenized = self.tokenizer.encode(
+            text, max_length=4096, truncation=True)
+        tokenized.to(self.device)
+        summary_ids = self.model.generate(tokenized,
+                                          num_beams=self.N_BEAMS,
+                                          no_repeat_ngram_size=self.NO_REPEAT_NGRAM,
+                                          length_penalty=self.PENALTY,
+                                          min_length=min_length,
+                                          max_length=max_length,
+                                          early_stopping=True)
+        summary = [self.tokenizer.decode(
+            g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids][0]
+        return summary
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -274,6 +295,14 @@ if __name__ == "__main__":
         legalModel = LegalModel(args.dataset, checkpoint=args.model_path)
         results = legalModel.evaluate_model()
         print(results)
+    elif args.mode == "eval":
+        # check that checkpoint file exists
+        # assert os.path.isdir(
+        #    args.model_path), f"[EVAL ERROR] checkpoint {args.model_path} does not exist"
+        print(f"Entering eval mode, loading model from {args.model_path}")
+        legalModel = LegalModel(args.dataset, checkpoint=args.model_path)
+        summary = legalModel.summarize(legalModel.test.select(range(1)))
+        print(summary)
     else:
         print(f"Unrecognized mode {args.mode} specified")
     # legalModel = LegalModel("billsum-finetuned/checkpoint-9000")

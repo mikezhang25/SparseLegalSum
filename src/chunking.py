@@ -99,7 +99,7 @@ class Summarizer:
                     "title": data["title"]
                 })
             # make this into a list of dictionaries then json dump
-            print(f"Savung {filename}_{split}.json")
+            print(f"Saving {filename}_{split}.json")
             with open(f"{filename}_{split}.json", "w") as f:
                 json.dump(summarized[split], f)
 
