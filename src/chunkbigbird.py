@@ -11,13 +11,16 @@ from evaluate import evaluator
 
 import torch
 import itertools
+import argparse
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 MAX_CHUNK_SIZE = 4096
 
 
 class ChunkingBigBird(PreTrainedModel):
-    def __init__(self, checkpoint, overlap=100):
+    def __init__(self, checkpoint, overlap):
+        print(
+            f"Loading model from {checkpoint}, initializing with {overlap}-token overlap")
         super(ChunkingBigBird, self).__init__(
             config=BigBirdPegasusConfig.from_pretrained(checkpoint))
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
@@ -36,13 +39,13 @@ class ChunkingBigBird(PreTrainedModel):
     def forward(self, sent_id, mask):
         """ Process input texts by chunks and returns a concatenated summary """
         chunks = [sent_id[i * MAX_CHUNK_SIZE - (self.overlap * i): (i + 1) * MAX_CHUNK_SIZE - (self.overlap * i)] for i in range
-            (1 + (len(sent_id) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
+                  (1 + (len(sent_id) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
         chunk_masks = [mask[i * MAX_CHUNK_SIZE - (self.overlap * i): (i + 1) * MAX_CHUNK_SIZE - (self.overlap * i)] for i in range
-            (1 + (len(mask) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
+                       (1 + (len(mask) - MAX_CHUNK_SIZE + (MAX_CHUNK_SIZE - self.overlap) - 1) // (MAX_CHUNK_SIZE - self.overlap))]
         # concat the outputs into one
         results = [self.model(chunks[i], mask=chunk_masks[i])
-                for i in range(len(chunks))]
-            
+                   for i in range(len(chunks))]
+
         return list(itertools.chain.from_iterable(results))
 
     def evaluate_model(self):
@@ -55,9 +58,13 @@ class ChunkingBigBird(PreTrainedModel):
 
 
 if __name__ == "__main__":
-    checkpoint = input("Checkpoint (ENTER to use pretrained): ")
-    if checkpoint == "":
-        checkpoint = "google/bigbird-pegasus-large-arxiv"
-    chunkbird = ChunkingBigBird(checkpoint)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("overlap", type=int)
+    parser.add_argument(
+        "--checkpoint", nargs="?", default="google/bigbird-pegasus-large-arxiv", const="google/bigbird-pegasus-large-arxiv")
+    args = parser.parse_args()
+    print(args.checkpoint)
+
+    chunkbird = ChunkingBigBird(args.checkpoint, args.overlap)
     # chunkbird.to(device)
     print(chunkbird.evaluate_model())
