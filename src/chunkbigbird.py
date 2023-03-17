@@ -2,7 +2,7 @@
 BigBirdPegasus model that implements the custom chunking mechanism
 Source: https://stackoverflow.com/questions/70814490/uploading-models-with-custom-forward-functions-to-the-huggingface-model-hub
 """
-import tqdm
+import wandb
 
 from datasets import load_dataset
 import transformers
@@ -16,6 +16,7 @@ import argparse
 device = "cuda" if torch.cuda.is_available() else "cpu"
 MAX_CHUNK_SIZE = 4096
 
+wandb.init(project="LegalSparseSum")
 
 class ChunkingBigBird(PreTrainedModel):
     def __init__(self, checkpoint, overlap):
