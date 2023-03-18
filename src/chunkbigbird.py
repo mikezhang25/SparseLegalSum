@@ -18,6 +18,7 @@ MAX_CHUNK_SIZE = 4096
 
 wandb.init(project="LegalSparseSum")
 
+
 class ChunkingBigBird(PreTrainedModel):
     def __init__(self, checkpoint, overlap):
         print(
@@ -30,6 +31,11 @@ class ChunkingBigBird(PreTrainedModel):
             "google/bigbird-pegasus-large-arxiv")
         self.load_billsum_dataset()
         self.overlap = overlap
+        # hyperparameters
+        self.N_BEAMS = 9
+        self.NO_REPEAT_NGRAM = 3
+        self.PENALTY = 5.0
+        self.MAX_OUTPUT_LEN = 4096
 
     def load_billsum_dataset(self):
         self.train = load_dataset(
@@ -57,6 +63,22 @@ class ChunkingBigBird(PreTrainedModel):
             model_or_pipeline=self.model, tokenizer=self.tokenizer, data=data, input_column="text", label_column="summary")
         return results
 
+    def summarize(self, text, min_length, max_length):
+        """ Summarizes a given chunk of text to a target length """
+        tokenized = self.tokenizer(
+            text, max_length=4096, truncation=True, return_tensors="pt")
+        tokenized.to(self.device)
+        summary_ids = self.model.generate(**tokenized,
+                                          num_beams=self.N_BEAMS,
+                                          no_repeat_ngram_size=self.NO_REPEAT_NGRAM,
+                                          length_penalty=self.PENALTY,
+                                          min_length=min_length,
+                                          max_length=max_length,
+                                          early_stopping=True)
+        summary = [self.tokenizer.decode(
+            g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids][0]
+        return summary
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -68,4 +90,7 @@ if __name__ == "__main__":
 
     chunkbird = ChunkingBigBird(args.checkpoint, args.overlap)
     # chunkbird.to(device)
-    print(chunkbird.evaluate_model())
+    # print(chunkbird.evaluate_model())
+    summary = chunkbird.summarize(
+        chunkbird.test.select(range(1))["text"], 0, 200)
+    print(summary)
