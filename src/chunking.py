@@ -26,7 +26,10 @@ class Summarizer:
         self.MAX_OUTPUT_LEN = 4096
 
     def summarize(self, tokenized, min_length, max_length):
-        """ Summarizes a given **tokenized** chunk of text to a target length """
+        """ 
+        Summarizes a given **tokenized** chunk of text to a target length 
+        adapted from BigBirdPegasus documentation (https://huggingface.co/docs/transformers/model_doc/bigbird_pegasus#transformers.BigBirdPegasusForConditionalGeneration)
+        """
         tokenized.to(self.device)
         summary_ids = self.model.generate(tokenized,
                                           num_beams=self.N_BEAMS,

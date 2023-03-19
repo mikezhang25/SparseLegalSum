@@ -1,4 +1,4 @@
-""" Pretraining on the MLM objective  """
+""" Pretraining on the MLM objective (deprecated) """
 import os
 import collections
 import torch

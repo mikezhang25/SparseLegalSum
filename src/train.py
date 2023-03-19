@@ -1,4 +1,10 @@
-""" Trying to train a model, save parameters, then load into a model for other purpose """
+""" 
+This program implements functionality to load a model from a checkpoint
+From there, it supports training, testing, and generating sample summaries
+Parts of the training and eval loops are adapted from the Hugging Face Tutorial (https://huggingface.co/course/chapter7/5?fw=pt#fine-tuning-mt5-with-the-trainer-api) 
+and (https://huggingface.co/blog/pretraining-bert#1-prepare-the-dataset),
+specifically the hyperparameters chosen
+"""
 import os
 import torch
 import wandb

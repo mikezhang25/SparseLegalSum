@@ -1,3 +1,5 @@
+""" DEPRECATED """
+
 from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, AutoTokenizer, TrainingArguments, Trainer, BigBirdPegasusForConditionalGeneration, DataCollatorForSeq2Seq
 from data_util import *
 from datasets import DatasetDict, load_dataset

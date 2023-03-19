@@ -2,6 +2,11 @@
 
 CS224N Final Project (Michael Zhang, Alex Alvarado-Barahona)
 
+## Usage
+
+Run `python src/train.py` for complete usage.  
+Run `python src/chunkbigbird.py` to run evaluation for K-Overlap.
+
 ## Roadmap
 
 ### By Project Milestone Deadline (4:30pm on Thursday, 03/02)
